@@ -5,7 +5,7 @@ namespace NSWDPC\SpamProtection;
 use Silverstripe\Forms\HiddenField;
 use SilverStripe\Forms\Validation\Validator;
 use SilverStripe\View\Requirements;
-use SilverStripe\ORM\ValidationResult;
+use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
@@ -468,10 +468,8 @@ class RecaptchaV3Field extends HiddenField
      * Validate the field
      * @see https://developers.google.com/recaptcha/docs/verify#error_code_reference
      * @inheritdoc
-     */    /**
- * Checks if the number of files attached adheres to the $allowedMaxFileNumber defined
- */
-    public function validate($validator): bool
+     */
+    public function validate(): ValidationResult
     {
         try {
             // clear previous attempts
@@ -498,7 +496,7 @@ class RecaptchaV3Field extends HiddenField
                     // all good
                     $this->setSubmittedValue("");
                     TokenResponse::logStat("isValid", true);
-                    return true;
+                    return ValidationResult::create();
                 } elseif ($response->isTimeout()) {
                     // on timeout always prompt for revalidation, in order to get a valid result to inspect
                     throw new RecaptchaVerificationException(self::getMessageTimeout());
@@ -513,7 +511,7 @@ class RecaptchaV3Field extends HiddenField
                                     "takeaction" => RecaptchaV3Rule::TAKE_ACTION_ALLOW
                                 ]
                             );
-                            return true;
+                            return ValidationResult::create();
                         case RecaptchaV3Rule::TAKE_ACTION_CAUTION:
                             // Allow an extension to throw a RecaptchaVerificationException or continue
                             $this->extend('recaptchaFailWithCaution', $rule, $response);
@@ -524,7 +522,7 @@ class RecaptchaV3Field extends HiddenField
                                     "takeaction" => RecaptchaV3Rule::TAKE_ACTION_CAUTION
                                 ]
                             );
-                            return true;
+                            return ValidationResult::create();
                         default:
                             throw new RecaptchaVerificationException(self::getMessagePossibleSpam());
                             break;
@@ -551,7 +549,7 @@ class RecaptchaV3Field extends HiddenField
         }
         $result = ValidationResult::create();
         // create a form-wide validation error
-        $result->addError($message, ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
+        $result->addError($message, ValidationResult::SEVERITY_ERROR, self::VALIDATION_ERROR_CODE);
         $this->setSubmittedValue("");
         // fail validation
         return false;
