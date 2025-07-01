@@ -6,7 +6,7 @@ use Silverstripe\Forms\HiddenField;
 use SilverStripe\Forms\Validation\Validator;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Validation\ValidationResult;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
 
