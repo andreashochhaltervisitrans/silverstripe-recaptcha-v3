@@ -3,6 +3,7 @@
 namespace NSWDPC\SpamProtection;
 
 use Silverstripe\Forms\HiddenField;
+use SilverStripe\Forms\Validation\Validator;
 use SilverStripe\View\Requirements;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\ORM\ValidationException;
@@ -102,15 +103,6 @@ class RecaptchaV3Field extends HiddenField
      * @var int milliseconds
      */
     protected $minRefreshTime = 30000;
-
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($name, $title = null, $value = null)
-    {
-        parent::__construct($name, $title, $value);
-    }
 
     /**
      * @inheritdoc
@@ -476,11 +468,12 @@ class RecaptchaV3Field extends HiddenField
      * Validate the field
      * @see https://developers.google.com/recaptcha/docs/verify#error_code_reference
      * @inheritdoc
-     */
-    public function validate($validator)
+     */    /**
+ * Checks if the number of files attached adheres to the $allowedMaxFileNumber defined
+ */
+    public function validate($validator): bool
     {
         try {
-
             // clear previous attempts
             $this->clearSessionResponse();
             $message = '';
@@ -513,12 +506,24 @@ class RecaptchaV3Field extends HiddenField
                     // Work out what action to take
                     switch ($rule->ActionToTake) {
                         case RecaptchaV3Rule::TAKE_ACTION_ALLOW:
-                            TokenResponse::logStat("rule", ["fail" => true, "rule" => $rule->ID, "takeaction" => RecaptchaV3Rule::TAKE_ACTION_ALLOW]);
+                            TokenResponse::logStat("rule",
+                                [
+                                    "fail" => true,
+                                    "rule" => $rule->ID,
+                                    "takeaction" => RecaptchaV3Rule::TAKE_ACTION_ALLOW
+                                ]
+                            );
                             return true;
                         case RecaptchaV3Rule::TAKE_ACTION_CAUTION:
                             // Allow an extension to throw a RecaptchaVerificationException or continue
                             $this->extend('recaptchaFailWithCaution', $rule, $response);
-                            TokenResponse::logStat("rule", ["fail" => true, "rule" => $rule->ID, "takeaction" => RecaptchaV3Rule::TAKE_ACTION_CAUTION]);
+                            TokenResponse::logStat("rule",
+                                [
+                                    "fail" => true,
+                                    "rule" => $rule->ID,
+                                    "takeaction" => RecaptchaV3Rule::TAKE_ACTION_CAUTION
+                                ]
+                            );
                             return true;
                         default:
                             throw new RecaptchaVerificationException(self::getMessagePossibleSpam());
@@ -544,9 +549,9 @@ class RecaptchaV3Field extends HiddenField
             Logger::log("RecaptchaV3 general error: " . $e->getMessage(), "NOTICE");
             $message = self::getMessageGeneralFailure();
         }
+        $result = ValidationResult::create();
         // create a form-wide validation error
-        $validationResult = $validator->getResult();
-        $validationResult->addError($message, ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
+        $result->addError($message, ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
         $this->setSubmittedValue("");
         // fail validation
         return false;
