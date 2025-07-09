@@ -549,7 +549,7 @@ class RecaptchaV3Field extends HiddenField
         }
         $result = ValidationResult::create();
         // create a form-wide validation error
-        $result->addError($message, ValidationResult::SEVERITY_ERROR, self::VALIDATION_ERROR_CODE);
+        $result->addError($message, ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
         $this->setSubmittedValue("");
         // fail validation
         return false;
