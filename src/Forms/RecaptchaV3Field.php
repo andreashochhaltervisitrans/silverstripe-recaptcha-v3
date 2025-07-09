@@ -476,7 +476,7 @@ class RecaptchaV3Field extends HiddenField
             $this->clearSessionResponse();
             $message = '';
             // the token set by the script in executionScript()
-            $token = $this->Value();
+            $token = $this->getValue();
             // no token submitted with form
             if (!$token) {
                 throw new \Exception("No token for this field ({$this->getName()})");
