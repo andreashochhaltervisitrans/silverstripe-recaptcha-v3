@@ -511,7 +511,10 @@ class RecaptchaV3Field extends HiddenField
                                     "takeaction" => RecaptchaV3Rule::TAKE_ACTION_ALLOW
                                 ]
                             );
-                            return ValidationResult::create();
+                            $result = ValidationResult::create();
+                            // create a form-wide validation error
+                            $result->addError('Failed', ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
+                            return $result;
                         case RecaptchaV3Rule::TAKE_ACTION_CAUTION:
                             // Allow an extension to throw a RecaptchaVerificationException or continue
                             $this->extend('recaptchaFailWithCaution', $rule, $response);
@@ -522,7 +525,10 @@ class RecaptchaV3Field extends HiddenField
                                     "takeaction" => RecaptchaV3Rule::TAKE_ACTION_CAUTION
                                 ]
                             );
-                            return ValidationResult::create();
+                            $result = ValidationResult::create();
+                            // create a form-wide validation error
+                            $result->addError('Failed', ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
+                            return $result;
                         default:
                             throw new RecaptchaVerificationException(self::getMessagePossibleSpam());
                             break;
@@ -552,6 +558,6 @@ class RecaptchaV3Field extends HiddenField
         $result->addError($message, ValidationResult::TYPE_ERROR, self::VALIDATION_ERROR_CODE);
         $this->setSubmittedValue("");
         // fail validation
-        return false;
+        return $result;
     }
 }
